@@ -1,4 +1,4 @@
-name: macOS Release 下载实测
+name: macOS delta 全流程实测
 on:
   push:
     branches: [main]
@@ -6,128 +6,53 @@ on:
 permissions:
   contents: read
 jobs:
-  download:
-    name: macOS / ${{ matrix.workers }} 路下载
+  pipeline:
+    name: macOS / ${{ matrix.workers }} 路处理
     runs-on: macos-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         workers: [1, 2, 4]
+    env:
+      COMPUTE_WORKERS: ${{ matrix.workers }}
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: 下载 20 个历史包并校验，两轮
-        env:
-          DOWNLOAD_WORKERS: ${{ matrix.workers }}
+      - name: 准备独立测试脚本
         shell: bash
         run: |
           python3 - <<'PY'
-          ASSETS_JSON = '[\n  {\n    "tag": "v4.3.7.5",\n    "asset_id": 633331122,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.5/KaraokeStudio-macos.zip",\n    "size": 144804390,\n    "sha256": "84459f5c1f915098c857ce430956ff9411f47b1393f80c3338dbc7398da8bfc1"\n  },\n  {\n    "tag": "v4.3.7.4",\n    "asset_id": 628257349,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.4/KaraokeStudio-macos.zip",\n    "size": 144769023,\n    "sha256": "bb5c4a55b183423939f5120eb597390a78342db2fb81537a44059c02377e6055"\n  },\n  {\n    "tag": "v4.3.7.3",\n    "asset_id": 622721461,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.3/KaraokeStudio-macos.zip",\n    "size": 144746949,\n    "sha256": "367b0f583c9413252cdb4dc18ad01a42f21e16fe71de69a4e6d5244cf5e453e7"\n  },\n  {\n    "tag": "v4.3.7.2",\n    "asset_id": 622098402,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.2/KaraokeStudio-macos.zip",\n    "size": 144745102,\n    "sha256": "e43a57f9efc7c1dabc81dce6637f291e1cf0ef90eeba0c904635db1cceb4795f"\n  },\n  {\n    "tag": "v4.3.7.1",\n    "asset_id": 618853771,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.1/KaraokeStudio-macos.zip",\n    "size": 144737116,\n    "sha256": "4ea62c9ca45978f1acb7da5b289a12d2f961ee8235aabc340c686fbea632ee44"\n  },\n  {\n    "tag": "v4.3.7",\n    "asset_id": 618326072,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7/KaraokeStudio-macos.zip",\n    "size": 144728923,\n    "sha256": "6c5b5316f0793c6ee5d64ee42646a42fa2223fc35994cfe5e7dd4045a7a281b7"\n  },\n  {\n    "tag": "v4.3.6",\n    "asset_id": 613597892,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.6/KaraokeStudio-macos.zip",\n    "size": 140452248,\n    "sha256": "0123cbe6b9a4edec8bdc4d7534c251a74f4396a570745a8e6d360d4869b83d8b"\n  },\n  {\n    "tag": "v4.3.5",\n    "asset_id": 612200605,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.5/KaraokeStudio-macos.zip",\n    "size": 140421225,\n    "sha256": "0d0ffc931f626551dae2c6a92ca4e2386507019082cda173f172a0929b9e6199"\n  },\n  {\n    "tag": "v4.3.4",\n    "asset_id": 611788082,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.4/KaraokeStudio-macos.zip",\n    "size": 140401129,\n    "sha256": "bddc9ebadddab60a12f407b30297fa8f6363c787e7ce07e132b52e57a00fb503"\n  },\n  {\n    "tag": "v4.3.3",\n    "asset_id": 606491814,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.3/KaraokeStudio-macos.zip",\n    "size": 140163624,\n    "sha256": "167515e14915b2ed69f28c7e91e23f209eb74f7b53ebd3da916eb02a11be4c99"\n  },\n  {\n    "tag": "v4.3.2",\n    "asset_id": 603555973,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.2/KaraokeStudio-macos.zip",\n    "size": 140088427,\n    "sha256": "ea923a71d3b25dfa9cfa16209bd259df39b5de06642c367e1c98fce85e58b891"\n  },\n  {\n    "tag": "v4.3.1",\n    "asset_id": 597608242,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.1/KaraokeStudio-macos.zip",\n    "size": 140059729,\n    "sha256": "2599ce75fe0326e1355889147613fc981f9158a98d4284263b2929347025097f"\n  },\n  {\n    "tag": "v4.3.0",\n    "asset_id": 593585350,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.0/KaraokeStudio-macos.zip",\n    "size": 139941600,\n    "sha256": "d905ee6649024b7bb390624ab192c8af91fd2d3fae5fd1ca5d8f91f7add2178c"\n  },\n  {\n    "tag": "v4.2.9.1",\n    "asset_id": 580781160,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.9.1/KaraokeStudio-macos.zip",\n    "size": 139086451,\n    "sha256": "41e57a458d0c15de404f71120287788531f58c0bb5e32690dd105dc20be37b7d"\n  },\n  {\n    "tag": "v4.2.9",\n    "asset_id": 578735434,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.9/KaraokeStudio-macos.zip",\n    "size": 139085848,\n    "sha256": "26e7a9ea3c7dca81d7d651118b4fb84fda2557f6f259b310d1450c98fb1b6003"\n  },\n  {\n    "tag": "v4.2.8.12",\n    "asset_id": 575643524,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.8.12/KaraokeStudio-macos.zip",\n    "size": 139074953,\n    "sha256": "d5cc01cdb055ad63e9a7d67a94c73c25f7b3692c79663c44fded584938e87bf5"\n  },\n  {\n    "tag": "v4.2.8.11",\n    "asset_id": 572152605,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.8.11/KaraokeStudio-macos.zip",\n    "size": 139032375,\n    "sha256": "92dd5a2b61fabe025e4583f6d06d6879a3852ffc0485c8e5fd9bba36a452191f"\n  },\n  {\n    "tag": "v4.2.8.10",\n    "asset_id": 569077685,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.8.10/KaraokeStudio-macos.zip",\n    "size": 139033834,\n    "sha256": "fd5debc3a2206e6c975107e2403309bab49f91f7dedefc2054c39ad81bf500fd"\n  },\n  {\n    "tag": "v4.2.8.9",\n    "asset_id": 563016803,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.8.9/KaraokeStudio-macos.zip",\n    "size": 139007097,\n    "sha256": "980ab284474ad50eb5f45e764d60adf7815148d7da4a0f96f46026f95da5a973"\n  },\n  {\n    "tag": "v4.2.8.8",\n    "asset_id": 553436014,\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.8.8/KaraokeStudio-macos.zip",\n    "size": 138922157,\n    "sha256": "bc0493af05211fa5e9a9fad9a99240d06a64bdbdd70d1d0d360b349670e72281"\n  }\n]'
-          import concurrent.futures
-          import hashlib
-          import json
-          import os
           from pathlib import Path
-          import platform
-          import shutil
-          import subprocess
-          import time
-
-          ASSETS = json.loads(ASSETS_JSON)
-          workers = int(os.environ['DOWNLOAD_WORKERS'])
-          root = Path(os.environ['RUNNER_TEMP']) / f'release-download-{workers}'
-          root.mkdir(parents=True, exist_ok=True)
-          output = Path('results')
-          output.mkdir(exist_ok=True)
-          report = dict(
-              workers=workers, asset_count=len(ASSETS),
-              total_expected_bytes=sum(a['size'] for a in ASSETS),
-              runner=dict(os=platform.platform(), architecture=platform.machine(),
-                          cpu_count=os.cpu_count(), macos=platform.mac_ver()[0],
-                          image_os=os.environ.get('ImageOS'),
-                          image_version=os.environ.get('ImageVersion'),
-                          runner_arch=os.environ.get('RUNNER_ARCH'),
-                          python=platform.python_version()),
-              curl_version=subprocess.check_output(['curl', '--version'], text=True).splitlines()[0],
-              assets=ASSETS, rounds=[],
-          )
-
-          def download(asset, folder, batch_start):
-              target = folder / f"{asset['tag']}.zip"
-              started = time.monotonic()
-              result = subprocess.run([
-                  'curl', '--silent', '--show-error', '--fail', '--location',
-                  '--connect-timeout', '15', '--max-time', '300',
-                  '--speed-time', '45', '--speed-limit', '1024',
-                  '--max-filesize', str(asset['size']), '--output', str(target),
-                  '--write-out', '%{json}', asset['url'],
-              ], capture_output=True, text=True)
-              completed = time.monotonic()
-              metrics = json.loads(result.stdout) if result.stdout else {}
-              actual_size = target.stat().st_size if target.exists() else 0
-              sha256 = None
-              if target.exists():
-                  with target.open('rb') as stream:
-                      sha256 = hashlib.file_digest(stream, 'sha256').hexdigest()
-              row = dict(tag=asset['tag'], expected_bytes=asset['size'],
-                         actual_bytes=actual_size, curl_exit=result.returncode,
-                         http_code=metrics.get('http_code'),
-                         download_seconds=round(completed-started, 4),
-                         curl_time_total=metrics.get('time_total'),
-                         bytes_per_second=metrics.get('speed_download'),
-                         http_version=metrics.get('http_version'),
-                         redirects=metrics.get('num_redirects'),
-                         transfer_finished_at_seconds=round(completed-batch_start, 4),
-                         sha256=sha256,
-                         verified=(result.returncode == 0 and metrics.get('http_code') == 200
-                                   and actual_size == asset['size'] and sha256 == asset['sha256']))
-              row['verification_seconds'] = round(time.monotonic()-completed, 4)
-              if result.stderr:
-                  row['error'] = result.stderr[:500]
-              target.unlink(missing_ok=True)
-              print(json.dumps(row), flush=True)
-              return row
-
-          for attempt in (1, 2):
-              folder = root / f'round-{attempt}'
-              folder.mkdir(exist_ok=False)
-              started = time.monotonic()
-              rows = []
-              with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
-                  futures = [pool.submit(download, a, folder, started) for a in ASSETS]
-                  for future in concurrent.futures.as_completed(futures):
-                      rows.append(future.result())
-              elapsed = time.monotonic()-started
-              batch = dict(attempt=attempt,
-                           download_wall_seconds=max(r['transfer_finished_at_seconds'] for r in rows),
-                           seconds_including_sha256=round(elapsed, 4),
-                           bytes=sum(r['actual_bytes'] for r in rows),
-                           all_verified=len(rows) == len(ASSETS) and all(r['verified'] for r in rows),
-                           downloads=sorted(rows, key=lambda r: r['tag']))
-              report['rounds'].append(batch)
-              (output / f'downloads-{workers}.json').write_text(json.dumps(report, indent=2))
-              print('ROUND_RESULT', json.dumps({k:v for k,v in batch.items() if k != 'downloads'}), flush=True)
-              shutil.rmtree(folder)
-
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as stream:
-              stream.write(f"## {workers} 路并行下载\n\n")
-              stream.write(f"macOS {report['runner']['macos']}，{report['runner']['architecture']}，{report['runner']['cpu_count']} 核。\n\n")
-              stream.write(f"每轮 {len(ASSETS)} 个完整包，共 {report['total_expected_bytes']:,} 字节；不使用 Actions 缓存。\n\n")
-              stream.write('| 轮次 | 下载完成耗时 | 包含 SHA256 校验 | 全部校验通过 |\n|---|---:|---:|---|\n')
-              for batch in report['rounds']:
-                  stream.write(f"| {batch['attempt']} | {batch['download_wall_seconds']:.2f} 秒 | {batch['seconds_including_sha256']:.2f} 秒 | {batch['all_verified']} |\n")
-          if not all(r['all_verified'] for r in report['rounds']):
-              raise SystemExit('One or more downloads failed verification')
-
+          import os
+          path=Path(os.environ['RUNNER_TEMP'])/'delta-pipeline.py'
+          path.write_text('INPUT_JSON = \'{\\n  "target": {\\n    "tag": "v4.3.7.6",\\n    "asset_id": 640931185,\\n    "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.6/KaraokeStudio-macos.zip",\\n    "size": 144904739,\\n    "sha256": "261a532588157e171895617c9b7fac147530908ff4b06f01ab88241a133296b8"\\n  },\\n  "baselines": [\\n    {\\n      "tag": "v4.3.7.5",\\n      "asset_id": 633331122,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.5/KaraokeStudio-macos.zip",\\n      "size": 144804390,\\n      "sha256": "84459f5c1f915098c857ce430956ff9411f47b1393f80c3338dbc7398da8bfc1"\\n    },\\n    {\\n      "tag": "v4.3.7.4",\\n      "asset_id": 628257349,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.4/KaraokeStudio-macos.zip",\\n      "size": 144769023,\\n      "sha256": "bb5c4a55b183423939f5120eb597390a78342db2fb81537a44059c02377e6055"\\n    },\\n    {\\n      "tag": "v4.3.7.3",\\n      "asset_id": 622721461,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.3/KaraokeStudio-macos.zip",\\n      "size": 144746949,\\n      "sha256": "367b0f583c9413252cdb4dc18ad01a42f21e16fe71de69a4e6d5244cf5e453e7"\\n    },\\n    {\\n      "tag": "v4.3.7.2",\\n      "asset_id": 622098402,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.2/KaraokeStudio-macos.zip",\\n      "size": 144745102,\\n      "sha256": "e43a57f9efc7c1dabc81dce6637f291e1cf0ef90eeba0c904635db1cceb4795f"\\n    },\\n    {\\n      "tag": "v4.3.7.1",\\n      "asset_id": 618853771,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7.1/KaraokeStudio-macos.zip",\\n      "size": 144737116,\\n      "sha256": "4ea62c9ca45978f1acb7da5b289a12d2f961ee8235aabc340c686fbea632ee44"\\n    },\\n    {\\n      "tag": "v4.3.7",\\n      "asset_id": 618326072,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.7/KaraokeStudio-macos.zip",\\n      "size": 144728923,\\n      "sha256": "6c5b5316f0793c6ee5d64ee42646a42fa2223fc35994cfe5e7dd4045a7a281b7"\\n    },\\n    {\\n      "tag": "v4.3.6",\\n      "asset_id": 613597892,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.6/KaraokeStudio-macos.zip",\\n      "size": 140452248,\\n      "sha256": "0123cbe6b9a4edec8bdc4d7534c251a74f4396a570745a8e6d360d4869b83d8b"\\n    },\\n    {\\n      "tag": "v4.3.5",\\n      "asset_id": 612200605,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.5/KaraokeStudio-macos.zip",\\n      "size": 140421225,\\n      "sha256": "0d0ffc931f626551dae2c6a92ca4e2386507019082cda173f172a0929b9e6199"\\n    },\\n    {\\n      "tag": "v4.3.4",\\n      "asset_id": 611788082,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.4/KaraokeStudio-macos.zip",\\n      "size": 140401129,\\n      "sha256": "bddc9ebadddab60a12f407b30297fa8f6363c787e7ce07e132b52e57a00fb503"\\n    },\\n    {\\n      "tag": "v4.3.3",\\n      "asset_id": 606491814,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.3/KaraokeStudio-macos.zip",\\n      "size": 140163624,\\n      "sha256": "167515e14915b2ed69f28c7e91e23f209eb74f7b53ebd3da916eb02a11be4c99"\\n    },\\n    {\\n      "tag": "v4.3.2",\\n      "asset_id": 603555973,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.2/KaraokeStudio-macos.zip",\\n      "size": 140088427,\\n      "sha256": "ea923a71d3b25dfa9cfa16209bd259df39b5de06642c367e1c98fce85e58b891"\\n    },\\n    {\\n      "tag": "v4.3.1",\\n      "asset_id": 597608242,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.1/KaraokeStudio-macos.zip",\\n      "size": 140059729,\\n      "sha256": "2599ce75fe0326e1355889147613fc981f9158a98d4284263b2929347025097f"\\n    },\\n    {\\n      "tag": "v4.3.0",\\n      "asset_id": 593585350,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.3.0/KaraokeStudio-macos.zip",\\n      "size": 139941600,\\n      "sha256": "d905ee6649024b7bb390624ab192c8af91fd2d3fae5fd1ca5d8f91f7add2178c"\\n    },\\n    {\\n      "tag": "v4.2.9.1",\\n      "asset_id": 580781160,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.9.1/KaraokeStudio-macos.zip",\\n      "size": 139086451,\\n      "sha256": "41e57a458d0c15de404f71120287788531f58c0bb5e32690dd105dc20be37b7d"\\n    },\\n    {\\n      "tag": "v4.2.9",\\n      "asset_id": 578735434,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.9/KaraokeStudio-macos.zip",\\n      "size": 139085848,\\n      "sha256": "26e7a9ea3c7dca81d7d651118b4fb84fda2557f6f259b310d1450c98fb1b6003"\\n    },\\n    {\\n      "tag": "v4.2.8.12",\\n      "asset_id": 575643524,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.8.12/KaraokeStudio-macos.zip",\\n      "size": 139074953,\\n      "sha256": "d5cc01cdb055ad63e9a7d67a94c73c25f7b3692c79663c44fded584938e87bf5"\\n    },\\n    {\\n      "tag": "v4.2.8.11",\\n      "asset_id": 572152605,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.8.11/KaraokeStudio-macos.zip",\\n      "size": 139032375,\\n      "sha256": "92dd5a2b61fabe025e4583f6d06d6879a3852ffc0485c8e5fd9bba36a452191f"\\n    },\\n    {\\n      "tag": "v4.2.8.10",\\n      "asset_id": 569077685,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.8.10/KaraokeStudio-macos.zip",\\n      "size": 139033834,\\n      "sha256": "fd5debc3a2206e6c975107e2403309bab49f91f7dedefc2054c39ad81bf500fd"\\n    },\\n    {\\n      "tag": "v4.2.8.9",\\n      "asset_id": 563016803,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.8.9/KaraokeStudio-macos.zip",\\n      "size": 139007097,\\n      "sha256": "980ab284474ad50eb5f45e764d60adf7815148d7da4a0f96f46026f95da5a973"\\n    },\\n    {\\n      "tag": "v4.2.8.8",\\n      "asset_id": 553436014,\\n      "url": "https://github.com/karaoke-studio/karaoke-studio/releases/download/v4.2.8.8/KaraokeStudio-macos.zip",\\n      "size": 138922157,\\n      "sha256": "bc0493af05211fa5e9a9fad9a99240d06a64bdbdd70d1d0d360b349670e72281"\\n    }\\n  ]\\n}\'\nimport base64\nimport concurrent.futures\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport platform\nimport shutil\nimport stat\nimport struct\nimport subprocess\nimport sys\nimport time\nimport zipfile\n\nINPUT = json.loads(INPUT_JSON)\nWORKERS = int(os.environ[\'COMPUTE_WORKERS\'])\nROOT = Path(os.environ[\'RUNNER_TEMP\']) / \'delta-benchmark\'\nOUTPUT = Path(\'results\')\nLOGS = OUTPUT / \'logs\'\nfor directory in (ROOT, OUTPUT, LOGS):\n    directory.mkdir(parents=True, exist_ok=True)\nREPORT_PATH = OUTPUT / \'pipeline.json\'\nSDK = ROOT / \'sparkle\'\nTOOL = SDK / \'bin/BinaryDelta\'\nASSETS = [INPUT[\'target\'], *INPUT[\'baselines\']]\nREPORT = json.loads(REPORT_PATH.read_text()) if REPORT_PATH.exists() else dict(\n    compute_workers=WORKERS, download_workers=2, patch_count=len(INPUT[\'baselines\']),\n    input=INPUT, started_epoch=time.time(), stages={},\n    runner=dict(platform=platform.platform(), cpu_count=os.cpu_count(),\n                architecture=platform.machine(), image_os=os.environ.get(\'ImageOS\'),\n                image_version=os.environ.get(\'ImageVersion\'),\n                disk_free_bytes=shutil.disk_usage(ROOT).free),\n)\n\ndef digest(path):\n    with path.open(\'rb\') as stream:\n        return hashlib.file_digest(stream, \'sha256\').hexdigest()\n\ndef command(args, logfile):\n    started = time.monotonic()\n    with (LOGS / logfile).open(\'w\') as stream:\n        subprocess.run([str(a) for a in args], stdout=stream,\n                       stderr=subprocess.STDOUT, check=True)\n    return round(time.monotonic()-started, 4)\n\ndef parallel(function, values, workers=WORKERS):\n    rows = []\n    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:\n        futures = [pool.submit(function, value) for value in values]\n        for future in concurrent.futures.as_completed(futures):\n            row = future.result()\n            rows.append(row)\n            print(json.dumps(row), flush=True)\n    return rows\n\ndef fetch(url, target, sha256, expected_size=None):\n    target.parent.mkdir(parents=True, exist_ok=True)\n    started = time.monotonic()\n    args = [\'curl\', \'--silent\', \'--show-error\', \'--fail\', \'--location\',\n            \'--connect-timeout\', \'15\', \'--max-time\', \'300\',\n            \'--speed-time\', \'45\', \'--speed-limit\', \'1024\',\n            \'--output\', str(target), \'--write-out\', \'%{json}\']\n    if expected_size is not None:\n        args.extend([\'--max-filesize\', str(expected_size)])\n    result = subprocess.run([*args, url], capture_output=True, text=True)\n    elapsed = time.monotonic()-started\n    if result.returncode:\n        raise RuntimeError(f\'Download failed ({result.returncode}): {result.stderr[:500]}\')\n    metrics = json.loads(result.stdout)\n    if metrics[\'http_code\'] != 200 or digest(target) != sha256:\n        raise RuntimeError(f\'Download checksum/status mismatch: {target.name}\')\n    if expected_size is not None and target.stat().st_size != expected_size:\n        raise RuntimeError(f\'Download size mismatch: {target.name}\')\n    return dict(download_seconds=round(elapsed, 4),\n                with_sha256_seconds=round(time.monotonic()-started, 4),\n                bytes=target.stat().st_size, sha256_verified=True)\n\ndef app(asset):\n    return ROOT / \'extracted\' / asset[\'tag\'] / \'Lin-K Lyrics.app\'\n\ndef patch(asset):\n    return ROOT / \'deltas\' / f"{asset[\'tag\']}-to-{INPUT[\'target\'][\'tag\']}.delta"\n\ndef inventory(directory):\n    entries = {}\n    for path in [directory, *directory.rglob(\'*\')]:\n        relative = path.relative_to(directory).as_posix()\n        metadata = path.lstat()\n        mode = stat.S_IMODE(metadata.st_mode)\n        if stat.S_ISLNK(metadata.st_mode):\n            entries[relative] = [\'symlink\', mode, os.readlink(path)]\n        elif stat.S_ISREG(metadata.st_mode):\n            entries[relative] = [\'file\', mode, metadata.st_size, digest(path)]\n        elif stat.S_ISDIR(metadata.st_mode):\n            entries[relative] = [\'directory\', mode]\n        else:\n            raise RuntimeError(f\'Unexpected filesystem entry: {relative}\')\n    return entries\n\ndef sdk():\n    SDK.mkdir(exist_ok=True)\n    archive = ROOT / \'Sparkle-2.9.6.tar.xz\'\n    row = fetch(\'https://github.com/sparkle-project/Sparkle/releases/download/2.9.6/Sparkle-2.9.6.tar.xz\',\n                archive, \'52bf9e88cdd972fc0c81501377a880e90d47031bd8ca5462488f843e2609e192\')\n    row[\'extract_seconds\'] = command([\'tar\', \'-xf\', archive, \'-C\', SDK], \'sdk-extract.log\')\n    if not TOOL.is_file():\n        raise RuntimeError(\'Sparkle SDK lacks BinaryDelta\')\n    return row\n\ndef download():\n    def one(asset):\n        return dict(tag=asset[\'tag\'], **fetch(asset[\'url\'], ROOT / \'archives\' / f"{asset[\'tag\']}.zip",\n                                           asset[\'sha256\'], asset[\'size\']))\n    return dict(packages=parallel(one, ASSETS, workers=2),\n                bytes=sum(a[\'size\'] for a in ASSETS))\n\ndef extract():\n    def one(asset):\n        destination = app(asset).parent\n        destination.mkdir(parents=True, exist_ok=False)\n        archive = ROOT / \'archives\' / f"{asset[\'tag\']}.zip"\n        seconds = command([\'ditto\', \'-x\', \'-k\', archive, destination], f"{asset[\'tag\']}-extract.log")\n        if not (app(asset) / \'Contents/Info.plist\').is_file():\n            raise RuntimeError(f\'App missing: {asset["tag"]}\')\n        archive.unlink()\n        return dict(tag=asset[\'tag\'], extract_seconds=seconds)\n    return dict(packages=parallel(one, ASSETS))\n\ndef target_inventory():\n    entries = inventory(app(INPUT[\'target\']))\n    (ROOT / \'target-inventory.json\').write_text(json.dumps(entries))\n    return dict(entries=len(entries),\n                regular_file_bytes=sum(v[2] for v in entries.values() if v[0] == \'file\'))\n\ndef create():\n    (ROOT / \'deltas\').mkdir(exist_ok=True)\n    def one(asset):\n        seconds = command([TOOL, \'create\', \'--version\', \'4\', \'--compression\', \'default\',\n                           app(asset), app(INPUT[\'target\']), patch(asset)], f"{asset[\'tag\']}-create.log")\n        return dict(tag=asset[\'tag\'], create_seconds=seconds,\n                    delta_bytes=patch(asset).stat().st_size, sha256=digest(patch(asset)))\n    rows = parallel(one, INPUT[\'baselines\'])\n    return dict(patches=rows, total_delta_bytes=sum(r[\'delta_bytes\'] for r in rows))\n\ndef verify():\n    expected = json.loads((ROOT / \'target-inventory.json\').read_text())\n    def one(asset):\n        patched = ROOT / \'patched\' / f"{asset[\'tag\']}.app"\n        patched.parent.mkdir(exist_ok=True)\n        started = time.monotonic()\n        apply_seconds = command([TOOL, \'apply\', app(asset), patched, patch(asset)],\n                                f"{asset[\'tag\']}-apply.log")\n        before_hash = time.monotonic()\n        actual = inventory(patched)\n        hash_seconds = time.monotonic()-before_hash\n        if actual != expected:\n            changed = [p for p in sorted(set(actual) | set(expected)) if actual.get(p) != expected.get(p)]\n            (OUTPUT / f"{asset[\'tag\']}-mismatch.json").write_text(json.dumps(changed))\n            raise RuntimeError(f\'Patched tree mismatch for {asset["tag"]}: {changed[:10]}\')\n        before_cleanup = time.monotonic()\n        shutil.rmtree(patched)\n        return dict(tag=asset[\'tag\'], apply_seconds=apply_seconds,\n                    tree_hash_seconds=round(hash_seconds, 4),\n                    cleanup_seconds=round(time.monotonic()-before_cleanup, 4),\n                    total_verify_seconds=round(time.monotonic()-started, 4),\n                    tree_matches_target=True, compared_entries=len(actual))\n    rows = parallel(one, INPUT[\'baselines\'])\n    return dict(patches=rows, all_verified=all(r[\'tree_matches_target\'] for r in rows))\n\ndef sign():\n    # Ephemeral benchmark seed, never persisted or printed; no production secrets.\n    seed = base64.b64encode(os.urandom(32)).decode() + \'\\n\'\n    signer = str(SDK / \'bin/sign_update\')\n    def one(asset):\n        started = time.monotonic()\n        result = subprocess.run([signer, \'--ed-key-file\', \'-\', \'-p\', str(patch(asset))],\n                                input=seed, text=True, capture_output=True)\n        if result.returncode:\n            raise RuntimeError(\'Benchmark signature generation failed\')\n        signature = result.stdout.strip()\n        if len(base64.b64decode(signature, validate=True)) != 64:\n            raise RuntimeError(\'Invalid benchmark signature\')\n        result = subprocess.run([signer, \'--ed-key-file\', \'-\', \'--verify\', str(patch(asset)), signature],\n                                input=seed, text=True, capture_output=True)\n        if result.returncode:\n            raise RuntimeError(\'Benchmark signature verification failed\')\n        return dict(tag=asset[\'tag\'], sign_and_verify_seconds=round(time.monotonic()-started, 4),\n                    signature=signature, signature_verified=True)\n    return dict(patches=parallel(one, INPUT[\'baselines\']))\n\ndef bundle():\n    archive = ROOT / \'KaraokeStudio-macos-deltas.zip\'\n    signatures = {p[\'tag\']: p[\'signature\'] for p in REPORT[\'stages\'][\'sign\'][\'patches\']}\n    with zipfile.ZipFile(archive, \'w\', compression=zipfile.ZIP_STORED) as container:\n        for asset in INPUT[\'baselines\']:\n            container.write(patch(asset), patch(asset).name)\n    index = []\n    with zipfile.ZipFile(archive) as container, archive.open(\'rb\') as stream:\n        for asset in INPUT[\'baselines\']:\n            entry = container.getinfo(patch(asset).name)\n            stream.seek(entry.header_offset)\n            header = stream.read(30)\n            name_size, extra_size = struct.unpack_from(\'<HH\', header, 26)\n            offset = entry.header_offset + 30 + name_size + extra_size\n            stream.seek(offset)\n            content_sha256 = hashlib.sha256(stream.read(entry.file_size)).hexdigest()\n            if content_sha256 != digest(patch(asset)):\n                raise RuntimeError(f\'Bundled range mismatch: {asset["tag"]}\')\n            index.append(dict(old=asset[\'tag\'], target=INPUT[\'target\'][\'tag\'], offset=offset,\n                              length=entry.file_size, sha256=content_sha256,\n                              signature=signatures[asset[\'tag\']]))\n    (OUTPUT / \'bundle-index.json\').write_text(json.dumps(index, indent=2))\n    return dict(bundle_bytes=archive.stat().st_size,\n                payload_bytes=sum(r[\'length\'] for r in index),\n                zip_overhead_bytes=archive.stat().st_size-sum(r[\'length\'] for r in index),\n                all_ranges_verified=True, sha256=digest(archive))\n\ndef summary():\n    report = REPORT\n    labels = dict(sdk=\'下载、校验和解压 Sparkle SDK\', download=\'下载并校验 21 个完整包\',\n                  extract=\'解压 21 个应用\', target_inventory=\'建立目标应用文件清单\',\n                  create=\'生成 20 个 delta\', verify=\'应用 20 个 delta 并比较完整文件树\',\n                  sign=\'签名并验证 20 个 delta\', bundle=\'合并 ZIP 并验证所有区间\')\n    report[\'total_stage_seconds\'] = round(sum(s[\'wall_seconds\'] for s in report[\'stages\'].values()), 4)\n    report[\'end_to_end_seconds\'] = round(time.time()-report[\'started_epoch\'], 4)\n    report[\'all_verified\'] = report[\'stages\'][\'verify\'][\'all_verified\'] and report[\'stages\'][\'bundle\'][\'all_ranges_verified\']\n    with open(os.environ[\'GITHUB_STEP_SUMMARY\'], \'a\') as stream:\n        stream.write(f"## {WORKERS} 路处理 / 2 路下载\\n\\n")\n        stream.write(f"Runner：{report[\'runner\'][\'platform\']}，{report[\'runner\'][\'cpu_count\']} 核。\\n\\n")\n        stream.write(\'| 阶段 | 耗时 |\\n|---|---:|\\n\')\n        for phase, label in labels.items():\n            stream.write(f"| {label} | {report[\'stages\'][phase][\'wall_seconds\']:.2f} 秒 |\\n")\n        stream.write(f"| 阶段合计 | {report[\'total_stage_seconds\']:.2f} 秒 |\\n")\n        stream.write(f"| 端到端（含步骤间开销） | {report[\'end_to_end_seconds\']:.2f} 秒 |\\n\\n")\n        stream.write(f"全部验证通过：{report[\'all_verified\']}。补丁合计 {report[\'stages\'][\'bundle\'][\'payload_bytes\']:,} 字节。\\n")\n    REPORT_PATH.write_text(json.dumps(report, indent=2))\n    print(\'PIPELINE_COMPLETE\', json.dumps(report, ensure_ascii=False), flush=True)\n\nphase = sys.argv[1]\nif phase == \'summary\':\n    summary()\nelse:\n    started = time.monotonic()\n    try:\n        details = globals()[phase]()\n        REPORT[\'stages\'][phase] = dict(wall_seconds=round(time.monotonic()-started, 4), **details)\n        print(\'STAGE_COMPLETE\', phase, json.dumps(REPORT[\'stages\'][phase]), flush=True)\n    except BaseException as error:\n        REPORT[\'failure\'] = dict(stage=phase, error=str(error),\n                                 elapsed_seconds=round(time.monotonic()-started, 4))\n        raise\n    finally:\n        REPORT_PATH.write_text(json.dumps(REPORT, indent=2))\n')
           PY
-      - name: 保存实测数据
+      - name: 下载并校验 Sparkle 2.9.6
+        run: python3 "$RUNNER_TEMP/delta-pipeline.py" sdk
+      - name: 2 路下载并校验 21 个完整包
+        run: python3 "$RUNNER_TEMP/delta-pipeline.py" download
+      - name: 解压 21 个应用
+        run: python3 "$RUNNER_TEMP/delta-pipeline.py" extract
+      - name: 建立目标应用文件清单
+        run: python3 "$RUNNER_TEMP/delta-pipeline.py" target_inventory
+      - name: 生成 20 个 delta
+        run: python3 "$RUNNER_TEMP/delta-pipeline.py" create
+      - name: 应用补丁并比较完整文件树
+        run: python3 "$RUNNER_TEMP/delta-pipeline.py" verify
+      - name: 使用临时密钥签名并验签
+        run: python3 "$RUNNER_TEMP/delta-pipeline.py" sign
+      - name: 合并 ZIP 并核对每个区间
+        run: python3 "$RUNNER_TEMP/delta-pipeline.py" bundle
+      - name: 汇总完整耗时
+        run: python3 "$RUNNER_TEMP/delta-pipeline.py" summary
+      - name: 保存阶段耗时与工具日志
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: downloads-${{ matrix.workers }}
-          path: results/*.json
+          name: pipeline-${{ matrix.workers }}
+          path: results/
           retention-days: 7
           if-no-files-found: error
